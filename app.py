@@ -82,13 +82,14 @@ def load_model():
 generator = load_model()
 
 # --- Utility Function ---
-def generate_images(digit, n_images=5):
+def generate_images(digit, n_images=5, noise_scale=1.0):
     """
     Generates a specified number of images for a given digit.
     
     Args:
         digit (int): The digit (0-9) to generate.
         n_images (int): The number of images to generate.
+        noise_scale (float): The scale factor for the input noise.
 
     Returns:
         PIL.Image: A single image containing a grid of the generated digits.
@@ -97,8 +98,8 @@ def generate_images(digit, n_images=5):
         return None
         
     with torch.no_grad():
-        # Create latent noise vectors
-        noise = torch.randn(n_images, LATENT_DIM, 1, 1, device='cpu')
+        # Create latent noise vectors, scaled by the noise_level
+        noise = torch.randn(n_images, LATENT_DIM, 1, 1, device='cpu') * noise_scale
         # Create corresponding labels
         labels = torch.full((n_images,), digit, device='cpu')
         
@@ -139,12 +140,21 @@ else:
         index=5 # Default to '5'
     )
 
+    noise_level = st.slider(
+        "Adjust Variation Level (バリエーション調整)",
+        min_value=0.5,
+        max_value=2.5,
+        value=1.5, # Default value
+        step=0.1,
+        help="Higher values create more diverse, but potentially less predictable, digits."
+    )
+
     if st.button(f"Generate 5 variations"):
-        st.subheader(f"Variations of '{digit_to_generate}'")
+        st.subheader(f"Variations of '{digit_to_generate}' at level {noise_level}")
         
         with st.spinner("Creating art..."):
             # Generate and display images
-            generated_image_grid = generate_images(digit_to_generate, n_images=5)
+            generated_image_grid = generate_images(digit_to_generate, n_images=5, noise_scale=noise_level)
             
             if generated_image_grid:
                 st.image(generated_image_grid, use_container_width=True)
