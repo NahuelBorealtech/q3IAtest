@@ -18,9 +18,9 @@ CHANNELS_IMG = 1
 NUM_CLASSES = 10
 LATENT_DIM = 100
 EMBEDDING_DIM = 100
-NUM_EPOCHS = 25
-FEATURES_DISC = 64
-FEATURES_GEN = 64
+NUM_EPOCHS = 5
+FEATURES_DISC = 32
+FEATURES_GEN = 32
 
 # Data loading and transformation
 transforms = transforms.Compose(
@@ -169,7 +169,7 @@ for epoch in range(NUM_EPOCHS):
         loss_disc_real = criterion(disc_real_pred, torch.ones_like(disc_real_pred))
         
         # Loss on fake images
-        noise = torch.randn(BATCH_SIZE, LATENT_DIM, 1, 1).to(DEVICE)
+        noise = torch.randn(real.size(0), LATENT_DIM, 1, 1).to(DEVICE)
         fake = gen(noise, labels)
         disc_fake_pred = disc(fake.detach(), labels).reshape(-1)
         loss_disc_fake = criterion(disc_fake_pred, torch.zeros_like(disc_fake_pred))
