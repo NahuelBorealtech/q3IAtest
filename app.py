@@ -74,7 +74,7 @@ def load_model():
         # is loaded onto the CPU, which is important for deployment environments
         # that may not have a GPU.
         model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
-        model.eval()  # Set the model to evaluation mode
+        model.train()  # Set the model to training mode to add stochasticity
         return model
     except FileNotFoundError:
         return None
@@ -117,36 +117,42 @@ def generate_images(digit, n_images=5):
 
 # --- Streamlit Web App UI ---
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Digital Ink | 手書き数字",
+    page_icon="🌸",
+    layout="centered" # Use "wide" for a wider layout
+)
 
-st.title("Handwritten Digit Image Generator")
-st.write("Generate synthetic MNIST-like images using a trained DCGAN model.")
+st.title("🌸 Digital Ink")
+st.markdown("Generate unique, calligraphic digits with AI. Choose a number and see what the machine dreams up.")
+st.divider()
 
 if generator is None:
     st.error(
-        f"**Model not found.** Please make sure the trained model file (`{MODEL_PATH}`) "
-        "is in the same directory as this script. "
-        "Follow the instructions in `README.md` to train and save the model."
+        f"**Model not found (`{MODEL_PATH}`).** Please follow the `README.md` instructions to train and place the model file."
     )
 else:
     # User input
     digit_to_generate = st.selectbox(
-        'Choose a digit to generate (0-9)',
+        'Select a Digit (数字を選択)',
         options=list(range(10)),
-        index=2 # Default to '2'
+        index=5 # Default to '5'
     )
 
-    if st.button(f"Generate images of digit {digit_to_generate}"):
-        st.subheader(f"Generated images of digit {digit_to_generate}")
+    if st.button(f"Generate 5 variations"):
+        st.subheader(f"Variations of '{digit_to_generate}'")
         
-        with st.spinner("Generating..."):
+        with st.spinner("Creating art..."):
             # Generate and display images
             generated_image_grid = generate_images(digit_to_generate, n_images=5)
             
             if generated_image_grid:
-                st.image(generated_image_grid, use_column_width=True)
+                st.image(generated_image_grid, use_container_width=True)
                 
                 # Add captions for clarity
                 cols = st.columns(5)
                 for i, col in enumerate(cols):
-                    col.caption(f"Sample {i+1}") 
+                    col.caption(f"Variation {i+1}")
+    
+st.divider()
+st.markdown("<p style='text-align: center; color: grey;'>Created with PyTorch & Streamlit</p>", unsafe_allow_html=True) 
